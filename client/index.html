@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" class="no-js">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LMS Bidyut Innovation</title>
+  <!-- Preconnect for Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <!-- Heading Font (Orbitron) -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap" rel="stylesheet">
+
+  <!-- Subheading Font (Nunito Sans) -->
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&display=swap"
+    rel="stylesheet">
+
+  <!-- Text Font (Roboto) -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet">
+
+  <!-- Content protection styles -->
+  <link rel="stylesheet" href="/src/contentProtection.css">
+ 
+  
+  <!-- Prevent iframe embedding -->
+  <style>
+    html {
+      display: none;
+    }
+    
+    .unselectable {
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      color: #cc0000;
+    }
+  </style>
+  <script>
+    // Prevent iframe embedding
+    if (self === top) {
+      document.documentElement.style.display = 'block';
+    } else {
+      top.location = self.location;
+    }
+    
+    // Add class to indicate JS is enabled
+    document.documentElement.className = document.documentElement.className.replace('no-js', 'js');
+    
+    // Disable various browser features that could be used for capturing
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText = function() {
+        return Promise.reject(new Error('Clipboard access disabled'));
+      };
+      navigator.clipboard.readText = function() {
+        return Promise.reject(new Error('Clipboard access disabled'));
+      };
+    }
+  </script>
+</head>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+<body>
+  <div id="root"></div>
+
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
+</html>

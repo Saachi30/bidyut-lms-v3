@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+
+.page-transition {
+  @apply transition-all duration-300 ease-in-out;
+}
+
+.page-enter {
+  @apply opacity-0;
+}
+
+.page-enter-active {
+  @apply opacity-100;
+}
+
+.page-exit {
+  @apply opacity-100;
+}
+
+.page-exit-active {
+  @apply opacity-0;
+}
+
+
+/* Custom styles */
+.btn-gradient {
+    @apply bg-secondary-500 hover:bg-secondary-600 transition-colors duration-300;
+  }
+  
+  .header-gradient {
+    @apply bg-secondary-500 text-black;
+  }
+
+  @font-face {
+    font-family: 'Skyfont-medium';
+    src: url('/src/assets/skyrox-font/skyrox-mediumcondensed') format('truetype');
+  }
+  @font-face {
+    font-family: 'Skyfont-italic';
+    src: url('/src/assets/skyrox-font/sskyrox-hairlineitalic') format('truetype');
+  }
+  @font-face {
+    font-family: 'Skyfont-regular';
+    src: url('/src/assets/skyrox-font/skyrox-hairlinecondensed') format('truetype');
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes slideDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+  
+  @keyframes slideLeft {
+    from { transform: translateX(20px); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  @keyframes bounce-slow {
+    0%, 100% {
+      transform: translateY(0) rotate(12deg);
+    }
+    50% {
+      transform: translateY(-25%) rotate(12deg);
+    }
+  }
+  
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .transform-style-3d {
+    transform-style: preserve-3d;
+  }
+  
+  .translate-z-12 {
+    transform: translateZ(12px);
+  }
+  
+  .animate-bounce-slow {
+    animation: bounce-slow 3s infinite;
+  }
+
+  @keyframes confetti {
+    0% {
+      transform: translateY(0) rotate(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100vh) rotate(720deg);
+      opacity: 0;
+    }
+  }
+  
+  .animate-confetti {
+    animation: confetti 2s ease-out forwards;
+  }
