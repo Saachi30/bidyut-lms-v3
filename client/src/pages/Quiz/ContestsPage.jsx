@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, Users, Trophy, Filter, Search, ChevronRight, PlusCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import ContestDetails from '../../components/ContestDetails';
+import ContestDetails from './ContestDetails';
 import CreateContestModal from '../../components/CreateContestModal';
 import axios from 'axios';
 
@@ -11,9 +11,11 @@ const Contests = ({ currUserRole }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContest, setSelectedContest] = useState(null);
   const [contests, setContests] = useState([]);
+  const [userParticipations, setUserParticipations] = useState([]);
   const [isCreateContestModalOpen, setIsCreateContestModalOpen] = useState(false);
+  const [showMyRegistrations, setShowMyRegistrations] = useState(false);
 
-  // Fetch contests (would be replaced with actual API call)
+  // Fetch contests
   useEffect(() => {
     const fetchContests = async () => {
       try {
@@ -23,14 +25,31 @@ const Contests = ({ currUserRole }) => {
           }
         });
         setContests(response.data.data || []);
+        
+        // Extract user participations for the current user
+        if (currUserRole === 'student') {
+          const participations = [];
+          response.data.data.forEach(contest => {
+            const userParticipation = contest.participants.find(
+              p => p.userId === JSON.parse(localStorage.getItem('user')).id
+            );
+            if (userParticipation) {
+              participations.push({
+                contestId: contest.id,
+                participantId: userParticipation.id,
+                score: userParticipation.score
+              });
+            }
+          });
+          setUserParticipations(participations);
+        }
       } catch (error) {
         console.error('Failed to fetch contests', error);
-        // Optional: Add error handling toast or notification
       }
     };
 
     fetchContests();
-  }, []);
+  }, [currUserRole]);
 
   const handleParticipate = async (contestId) => {
     try {
@@ -41,38 +60,84 @@ const Contests = ({ currUserRole }) => {
       });
       
       if (response.data.success) {
-        // TODO: Show success message or update UI
-        console.log('Participation successful');
+        // Add to user participations
+        setUserParticipations([
+          ...userParticipations,
+          {
+            contestId: contestId,
+            participantId: response.data.data.id,
+            score: 0
+          }
+        ]);
+        
+        // Show success notification
+        alert('Successfully registered for the contest!');
+        
+        // Refresh contests to update UI
+        const updatedContests = [...contests];
+        const contestIndex = updatedContests.findIndex(c => c.id === contestId);
+        if (contestIndex !== -1) {
+          const userId = JSON.parse(localStorage.getItem('user')).id;
+          updatedContests[contestIndex].participants.push({
+            contestId,
+            userId,
+            score: 0
+          });
+          setContests(updatedContests);
+        }
       }
     } catch (error) {
       console.error('Failed to participate', error);
-      // Optional: Add error handling toast or notification
+      alert(error.response?.data?.message || 'Failed to register for contest');
     }
   };
 
-  // Filter contests based on tab, filter, and search
+  const handleContestClick = (contest) => {
+    // Find if user is registered for this contest
+    const isRegistered = userParticipations.some(p => p.contestId === contest.id);
+    
+    // Pass registration status to ContestDetails
+    setSelectedContest({
+      ...contest,
+      userRegistrationStatus: isRegistered ? 'registered' : 'not-registered',
+      participants: contest.participants.length
+    });
+    
+  };
+
+  const handleBackToList = () => {
+    setSelectedContest(null);
+  };
+
+  // Filter contests based on tab, filter, search, and optionally user registrations
   const filteredContests = contests.filter(contest => {
     const now = new Date();
     
+    // Filter by my registrations if that view is active
+    if (showMyRegistrations && currUserRole === 'student') {
+      const isRegistered = userParticipations.some(p => p.contestId === contest.id);
+      if (!isRegistered) return false;
+    }
+    
     // Filter by subject tab
-    if (activeTab !== 'all' && contest.quiz.category.name.toLowerCase() !== activeTab) return false;
+    if (activeTab !== 'all' && contest.quiz?.category?.name?.toLowerCase() !== activeTab) return false;
     
     // Filter by status
-    if (filter === 'upcoming' && contest.startTime <= now) return false;
-    if (filter === 'ongoing' && (contest.startTime > now || contest.endTime < now)) return false;
-    if (filter === 'past' && contest.endTime > now) return false;
+    if (filter === 'upcoming' && new Date(contest.startTime) <= now) return false;
+    if (filter === 'ongoing' && (new Date(contest.startTime) > now || new Date(contest.endTime) < now)) return false;
+    if (filter === 'past' && new Date(contest.endTime) > now) return false;
     
     // Filter by search query
-    if (searchQuery && !contest.quiz.title.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery && !contest.quiz?.title?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     
     return true;
   });
 
   const getStatusColor = (contest) => {
     const now = new Date();
-    if (contest.startTime > now) {
+    if (new Date(contest.startTime) > now) {
       return 'text-amber-500 bg-amber-50';
-    } else if (contest.endTime > now) {
+    } else if (new Date(contest.endTime) > now) {
       return 'text-emerald-500 bg-emerald-50';
     } else {
       return 'text-gray-500 bg-gray-50';
@@ -81,9 +146,9 @@ const Contests = ({ currUserRole }) => {
 
   const getStatusText = (contest) => {
     const now = new Date();
-    if (contest.startTime > now) {
+    if (new Date(contest.startTime) > now) {
       return 'Upcoming';
-    } else if (contest.endTime > now) {
+    } else if (new Date(contest.endTime) > now) {
       return 'Ongoing';
     } else {
       return 'Ended';
@@ -92,8 +157,8 @@ const Contests = ({ currUserRole }) => {
 
   const getTimeRemaining = (contest) => {
     const now = new Date();
-    if (contest.startTime > now) {
-      const diffMs = contest.startTime - now;
+    if (new Date(contest.startTime) > now) {
+      const diffMs = new Date(contest.startTime) - now;
       const diffDays = Math.floor(diffMs / 86400000);
       const diffHrs = Math.floor((diffMs % 86400000) / 3600000);
       
@@ -102,8 +167,8 @@ const Contests = ({ currUserRole }) => {
       } else {
         return `Starts in ${diffHrs}h`;
       }
-    } else if (contest.endTime > now) {
-      const diffMs = contest.endTime - now;
+    } else if (new Date(contest.endTime) > now) {
+      const diffMs = new Date(contest.endTime) - now;
       const diffHrs = Math.floor(diffMs / 3600000);
       const diffMins = Math.floor((diffMs % 3600000) / 60000);
       
@@ -115,20 +180,26 @@ const Contests = ({ currUserRole }) => {
 
   // If a contest is selected, show the contest details
   if (selectedContest) {
-    return <ContestDetails contest={selectedContest} onBack={handleBackToList} />;
+    return (
+      <ContestDetails 
+        contest={selectedContest} 
+        onBack={handleBackToList}
+        isRegistered={userParticipations.some(p => p.contestId === selectedContest.id)}
+        onRegister={() => handleParticipate(selectedContest.id)}
+        currUserRole={currUserRole}
+      />
+    );
   }
 
-  // Define subject tabs (dynamically populate from categories)
+  // Define subject tabs for robotics topics
   const subjectTabs = [
     { id: 'all', label: 'All Contests' },
-    { id: 'mathematics', label: 'Mathematics' },
-    { id: 'physics', label: 'Physics' },
-    { id: 'chemistry', label: 'Chemistry' },
-    { id: 'biology', label: 'Biology' },
-    { id: 'computer science', label: 'Computer Science' }
+    { id: 'robotics', label: 'Robotics' },
+    { id: 'programming', label: 'Programming' },
+    { id: 'electronics', label: 'Electronics' },
+    { id: 'mechanical', label: 'Mechanical' },
+    { id: 'computer science', label: 'AI & ML' }
   ];
-
-  
 
   return (
     <div className="p-8 bg-white">
@@ -138,7 +209,7 @@ const Contests = ({ currUserRole }) => {
         </h1>
         <div className="flex space-x-4">
           <div className="relative">
-            <Search className="absolute right-52 top-3 text-gray-400" size={18} />
+            <Search className="absolute left-3 top-3 text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Search contests..."
@@ -158,8 +229,15 @@ const Contests = ({ currUserRole }) => {
             </button>
           )}
           {currUserRole === 'student' && (
-            <button className="px-6 py-3 bg-ternary-500 text-white rounded-xl transition-all duration-300 hover:bg-ternary-600">
-              My Registrations
+            <button 
+              onClick={() => setShowMyRegistrations(!showMyRegistrations)}
+              className={`px-6 py-3 rounded-xl transition-all duration-300 flex items-center ${
+                showMyRegistrations 
+                  ? "bg-ternary-600 text-white" 
+                  : "bg-ternary-500 text-white hover:bg-ternary-600"
+              }`}
+            >
+              {showMyRegistrations ? 'All Contests' : 'My Registrations'}
             </button>
           )}
         </div>
@@ -182,7 +260,7 @@ const Contests = ({ currUserRole }) => {
             </button>
           ))}
         </div>
-        </div>
+      </div>
 
       {/* Filter Buttons */}
       <div className="flex items-center mb-8 space-x-4">
@@ -227,65 +305,108 @@ const Contests = ({ currUserRole }) => {
       {/* Contests List */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {filteredContests.length > 0 ? (
-          filteredContests.map((contest) => (
-            <div
-              key={contest.id}
-              className="bg-white rounded-xl shadow-sm border-2 border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
-            >
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-800 mb-1">
-                    {contest.quiz.title}
-                  </h3>
-                  <p className="text-gray-500 line-clamp-2">{contest.quiz.description}</p>
+          filteredContests.map((contest) => {
+            const isRegistered = userParticipations.some(p => p.contestId === contest.id);
+            const now = new Date();
+            const isLive = new Date(contest.startTime) <= now && new Date(contest.endTime) > now;
+            
+            return (
+              <div
+                key={contest.id}
+                className="bg-white rounded-xl shadow-sm border-2 border-gray-100 p-6 hover:shadow-md transition-all duration-300 transform hover:-translate-y-1"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div>
+                    <h3 className="text-xl font-semibold text-gray-800 mb-1">
+                      {contest.quiz?.title}
+                      {isRegistered && (
+                        <span className="ml-2 text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded-full">
+                          Registered
+                        </span>
+                      )}
+                    </h3>
+                    <p className="text-gray-500 line-clamp-2">{contest.quiz?.description}</p>
+                  </div>
+                  <span className={`text-sm font-medium px-3 py-1 rounded-full ${getStatusColor(contest)}`}>
+                    {getStatusText(contest)}
+                  </span>
                 </div>
-                <span className={`text-sm font-medium px-3 py-1 rounded-full ${getStatusColor(contest)}`}>
-                  {getStatusText(contest)}
-                </span>
-              </div>
-              
-              <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-6">
-                <div className="flex items-center">
-                  <Calendar size={16} className="mr-1 text-primary-500" />
-                  <span>{new Date(contest.startTime).toLocaleDateString()}</span>
+                
+                <div className="flex flex-wrap gap-4 text-sm text-gray-600 mt-6">
+                  <div className="flex items-center">
+                    <Calendar size={16} className="mr-1 text-primary-500" />
+                    <span>{new Date(contest.startTime).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Clock size={16} className="mr-1 text-primary-500" />
+                    <span>{getTimeRemaining(contest)}</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Users size={16} className="mr-1 text-primary-500" />
+                    <span>{contest.participants.length} participants</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Trophy size={16} className="mr-1 text-primary-500" />
+                    <span className="capitalize">{contest.quiz?.difficulty || 'Medium'}</span>
+                  </div>
                 </div>
-                <div className="flex items-center">
-                  <Clock size={16} className="mr-1 text-primary-500" />
-                  <span>{getTimeRemaining(contest)}</span>
-                </div>
-                <div className="flex items-center">
-                  <Users size={16} className="mr-1 text-primary-500" />
-                  <span>{contest.participants.length} participants</span>
-                </div>
-                <div className="flex items-center">
-                  <Trophy size={16} className="mr-1 text-primary-500" />
-                  <span className="capitalize">{contest.quiz.difficulty || 'Medium'}</span>
-                </div>
-              </div>
-              
-              <div className="mt-4 flex justify-between items-center">
-                <div 
-                  onClick={() => handleContestClick(contest)}
-                  className="text-primary-500 flex items-center text-sm font-medium cursor-pointer"
-                >
-                  View details <ChevronRight size={16} className="ml-1" />
-                </div>
-
-                {/* Participate Button for Students */}
-                {currUserRole === 'student' && (
-                  <button
-                    onClick={() => handleParticipate(contest.id)}
-                    className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all duration-300"
+                
+                <div className="mt-4 flex justify-between items-center">
+                  <div 
+                    onClick={() => handleContestClick(contest)}
+                    className="text-primary-500 flex items-center text-sm font-medium cursor-pointer"
                   >
-                    Participate
-                  </button>
-                )}
+                    View details <ChevronRight size={16} className="ml-1" />
+                  </div>
+
+                  {/* Conditional action buttons for students */}
+                  {currUserRole === 'student' && (
+                    <>
+                      {isLive && isRegistered ? (
+                        <button
+                          onClick={() => handleContestClick(contest)}
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all duration-300"
+                        >
+                          Start Contest
+                        </button>
+                      ) : !isRegistered && new Date(contest.startTime) > now ? (
+                        <button
+                          onClick={() => handleParticipate(contest.id)}
+                          className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all duration-300"
+                        >
+                          Register
+                        </button>
+                      ) : isRegistered && new Date(contest.startTime) > now ? (
+                        <span className="px-4 py-2 bg-gray-100 text-gray-500 rounded-lg">
+                          Registered
+                        </span>
+                      ) : new Date(contest.endTime) < now ? (
+                        <button
+                          onClick={() => handleContestClick(contest)}
+                          className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300"
+                        >
+                          View Results
+                        </button>
+                      ) : !isRegistered && isLive ? (
+                        <button
+                          onClick={() => handleParticipate(contest.id)}
+                          className="px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-all duration-300"
+                        >
+                          Join Now
+                        </button>
+                      ) : null}
+                    </>
+                  )}
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         ) : (
           <div className="col-span-2 p-8 text-center text-gray-500 bg-gray-50 rounded-xl">
-            No contests found matching your criteria. Try changing your filters.
+            {showMyRegistrations ? 
+              "You haven't registered for any contests yet." : 
+              "No contests found matching your criteria. Try changing your filters."
+            }
           </div>
         )}
       </div>

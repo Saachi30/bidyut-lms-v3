@@ -116,14 +116,6 @@ const participateInContest = async (req, res, next) => {
       return next(error);
     }
 
-    // Check contest time validity
-    const now = new Date();
-    if (now < contest.startTime || now > contest.endTime) {
-      const error = new Error('Contest is not currently active');
-      error.statusCode = 400;
-      return next(error);
-    }
-
     // Check if user is already registered
     const existingParticipant = await prisma.contestParticipant.findFirst({
       where: {
@@ -134,6 +126,14 @@ const participateInContest = async (req, res, next) => {
 
     if (existingParticipant) {
       const error = new Error('Already registered for this contest');
+      error.statusCode = 400;
+      return next(error);
+    }
+
+    // Allow registration for upcoming contests
+    const now = new Date();
+    if (now > contest.endTime) {
+      const error = new Error('Contest has already ended');
       error.statusCode = 400;
       return next(error);
     }
