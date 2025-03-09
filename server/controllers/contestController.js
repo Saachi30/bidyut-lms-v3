@@ -71,7 +71,11 @@ const getContests = async (req, res, next) => {
     const contests = await prisma.contest.findMany({
       include: {
         quiz: true,
-        participants: true
+        participants: {
+          include: {
+            user: true
+          }
+        }
       },
       orderBy: {
         startTime: 'desc'
@@ -82,6 +86,66 @@ const getContests = async (req, res, next) => {
       success: true,
       count: contests.length,
       data: contests
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Get a single contest with user attempt status
+ * @route   GET /api/contests/:id
+ * @access  Private
+ */
+const getContest = async (req, res, next) => {
+  try {
+    const contestId = parseInt(req.params.id);
+    const userId = req.user.id;
+
+    const contest = await prisma.contest.findUnique({
+      where: { id: contestId },
+      include: {
+        quiz: true,
+        participants: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    if (!contest) {
+      const error = new Error('Contest not found');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    // Check if user has attempted the quiz
+    let userAttempt = null;
+    if (userId) {
+      const quizReport = await prisma.quizReport.findFirst({
+        where: {
+          quizId: contest.quiz.id,
+          userId: userId
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
+
+      userAttempt = {
+        hasAttempted: Boolean(quizReport),
+        score: quizReport?.score || null,
+        isSubmitted: quizReport?.isSubmitted || false
+      };
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ...contest,
+        userAttempt
+      }
     });
   } catch (error) {
     next(error);
@@ -107,7 +171,10 @@ const participateInContest = async (req, res, next) => {
 
     // Check if contest exists
     const contest = await prisma.contest.findUnique({
-      where: { id: contestId }
+      where: { id: contestId },
+      include: {
+        quiz: true
+      }
     });
 
     if (!contest) {
@@ -130,6 +197,20 @@ const participateInContest = async (req, res, next) => {
       return next(error);
     }
 
+    // Check if user has already attempted the quiz
+    const quizReport = await prisma.quizReport.findFirst({
+      where: {
+        quizId: contest.quiz.id,
+        userId
+      }
+    });
+
+    if (quizReport) {
+      const error = new Error('You have already attempted this contest');
+      error.statusCode = 400;
+      return next(error);
+    }
+
     // Allow registration for upcoming contests
     const now = new Date();
     if (now > contest.endTime) {
@@ -143,7 +224,7 @@ const participateInContest = async (req, res, next) => {
       data: {
         contestId,
         userId,
-        score: 0
+        score: 0 // Remove hasAttempted from here
       },
       include: {
         contest: {
@@ -163,7 +244,6 @@ const participateInContest = async (req, res, next) => {
     next(error);
   }
 };
-
 /**
  * @desc    Submit score for a contest
  * @route   POST /api/contests/:id/submit-score
@@ -173,7 +253,7 @@ const submitContestScore = async (req, res, next) => {
   try {
     const contestId = parseInt(req.params.id);
     const userId = req.user.id;
-    const { score } = req.body;
+    const { score, quizReportId } = req.body;
 
     // Check if user is a student
     if (req.user.role !== 'student') {
@@ -184,7 +264,10 @@ const submitContestScore = async (req, res, next) => {
 
     // Check if contest exists
     const contest = await prisma.contest.findUnique({
-      where: { id: contestId }
+      where: { id: contestId },
+      include: {
+        quiz: true
+      }
     });
 
     if (!contest) {
@@ -215,11 +298,44 @@ const submitContestScore = async (req, res, next) => {
       return next(error);
     }
 
-    // Update participant's score
+    // Ensure user hasn't already submitted a score
+    if (participant.hasAttempted) {
+      const error = new Error('You have already submitted a score for this contest');
+      error.statusCode = 400;
+      return next(error);
+    }
+
+    // Verify the quiz report if quizReportId is provided
+    if (quizReportId) {
+      const quizReport = await prisma.quizReport.findUnique({
+        where: { 
+          id: parseInt(quizReportId)
+        }
+      });
+
+      if (!quizReport || quizReport.userId !== userId || quizReport.quizId !== contest.quiz.id) {
+        const error = new Error('Invalid quiz report');
+        error.statusCode = 400;
+        return next(error);
+      }
+
+      // Update the quiz report to mark it as submitted for the contest
+      await prisma.quizReport.update({
+        where: { id: parseInt(quizReportId) },
+        data: { isSubmitted: true }
+      });
+    }
+
+    // Update participant's score and mark as attempted
     const updatedParticipant = await prisma.contestParticipant.update({
       where: { id: participant.id },
-      data: { score },
+      data: { 
+        score: parseInt(score),
+        hasAttempted: true,
+        submittedAt: new Date()
+      },
       include: {
+        user: true,
         contest: {
           include: {
             quiz: true
@@ -238,9 +354,174 @@ const submitContestScore = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Get contest leaderboard
+ * @route   GET /api/contests/:id/leaderboard
+ * @access  Private
+ */
+const getContestLeaderboard = async (req, res, next) => {
+  try {
+    const contestId = parseInt(req.params.id);
+
+    // Check if contest exists
+    const contest = await prisma.contest.findUnique({
+      where: { id: contestId }
+    });
+
+    if (!contest) {
+      const error = new Error('Contest not found');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    // Get all participants with user info
+    const participants = await prisma.contestParticipant.findMany({
+      where: {
+        contestId,
+        hasAttempted: true
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            profilePicture: true
+          }
+        }
+      },
+      orderBy: [
+        { score: 'desc' },
+        { submittedAt: 'asc' }
+      ]
+    });
+
+    // Calculate participant ranks
+    const leaderboard = participants.map((participant, index) => ({
+      ...participant,
+      rank: index + 1
+    }));
+
+    res.status(200).json({
+      success: true,
+      count: leaderboard.length,
+      data: leaderboard
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Update a contest
+ * @route   PUT /api/contests/:id
+ * @access  Private/Admin, Institute, Faculty
+ */
+const updateContest = async (req, res, next) => {
+  try {
+    const contestId = parseInt(req.params.id);
+    const { startTime, endTime } = req.body;
+    const updaterRole = req.user.role;
+
+    // Check if updater has permission
+    if (!['admin', 'institute', 'faculty'].includes(updaterRole)) {
+      const error = new Error('Unauthorized to update contests');
+      error.statusCode = 403;
+      return next(error);
+    }
+
+    // Check if contest exists
+    const contest = await prisma.contest.findUnique({
+      where: { id: contestId }
+    });
+
+    if (!contest) {
+      const error = new Error('Contest not found');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    // Update contest
+    const updatedContest = await prisma.contest.update({
+      where: { id: contestId },
+      data: {
+        startTime: startTime ? new Date(startTime) : undefined,
+        endTime: endTime ? new Date(endTime) : undefined
+      },
+      include: {
+        quiz: true,
+        participants: {
+          include: {
+            user: true
+          }
+        }
+      }
+    });
+
+    res.status(200).json({
+      success: true,
+      data: updatedContest
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Delete a contest
+ * @route   DELETE /api/contests/:id
+ * @access  Private/Admin
+ */
+const deleteContest = async (req, res, next) => {
+  try {
+    const contestId = parseInt(req.params.id);
+
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      const error = new Error('Only admins can delete contests');
+      error.statusCode = 403;
+      return next(error);
+    }
+
+    // Check if contest exists
+    const contest = await prisma.contest.findUnique({
+      where: { id: contestId }
+    });
+
+    if (!contest) {
+      const error = new Error('Contest not found');
+      error.statusCode = 404;
+      return next(error);
+    }
+
+    // Delete all participants first to avoid foreign key constraint errors
+    await prisma.contestParticipant.deleteMany({
+      where: { contestId }
+    });
+
+    // Delete the contest
+    await prisma.contest.delete({
+      where: { id: contestId }
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Contest deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 module.exports = {
   createContest,
   getContests,
+  getContest,
   participateInContest,
-  submitContestScore
+  submitContestScore,
+  getContestLeaderboard,
+  updateContest,
+  deleteContest
 };
