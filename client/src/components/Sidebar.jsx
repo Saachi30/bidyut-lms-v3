@@ -63,10 +63,11 @@ const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
     }
   };
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   const handleLogout = async () => {
     try {
       // Call the logout API
-      await axios.post('http://localhost:5000/api/auth/logout');
+      await axios.post(`${baseURL}api/auth/logout`);
       
       // Remove user data from localStorage
       localStorage.removeItem('token');

@@ -9,13 +9,14 @@ const Faculties = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedInstitute, setSelectedInstitute] = useState('All Institutes');
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const fetchFaculties = async () => {
       try {
         // Get token from localStorage or wherever you store it
         const token = localStorage.getItem('token');
         
-        const response = await axios.get('http://localhost:5000/api/users/faculties/all', {
+        const response = await axios.get(`${baseURL}api/users/faculties/all`, {
           headers: {
             Authorization: `Bearer ${token}`
           }

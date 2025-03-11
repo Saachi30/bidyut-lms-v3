@@ -498,6 +498,7 @@ const ContestDetails = ({ contest, onBack, isRegistered, onRegister, currUserRol
     setHasAttempted(true); // Update state
   }
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   // Fetch quiz report and score (existing logic)
   const fetchQuizReport = async () => {
     if (!contest?.quiz?.id) {
@@ -509,7 +510,7 @@ const ContestDetails = ({ contest, onBack, isRegistered, onRegister, currUserRol
       setLoading(true);
       setError(null);
 
-      const response = await axios.get(`http://localhost:5000/api/quizzes/reports/${contest.quiz.id}/latest`, {
+      const response = await axios.get(`${baseURL}api/quizzes/reports/${contest.quiz.id}/latest`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },

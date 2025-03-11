@@ -23,12 +23,13 @@ const Institutes = () => {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState(null);
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   // Fetch institutes
   const fetchInstitutes = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:5000/api/institutes', {
+      const response = await axios.get(`${baseURL}api/institutes`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -81,7 +82,7 @@ const handleAddInstitute = async (e) => {
     setSubmitError(null);
 
     const token = localStorage.getItem('token');
-    const response = await axios.post('http://localhost:5000/api/institutes', data, {
+    const response = await axios.post(`${baseURL}api/institutes`, data, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -126,7 +127,7 @@ const handleUpdateInstitute = async (e) => {
 
     const token = localStorage.getItem('token');
     const response = await axios.put(
-      `http://localhost:5000/api/institutes/${selectedInstitute.id}`,
+      `${baseURL}api/institutes/${selectedInstitute.id}`,
       data,
       {
         headers: {
@@ -190,7 +191,7 @@ const handleUpdateInstitute = async (e) => {
 
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `http://localhost:5000/api/institutes/${selectedInstitute.id}`,
+        `${baseURL}api/institutes/${selectedInstitute.id}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

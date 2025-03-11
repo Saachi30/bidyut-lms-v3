@@ -64,13 +64,14 @@ const Login = ({ onLogin, currUserRole, setCurrUserRole }) => {
     setDropdownOpen(false);
   };
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', loginData);
+      const response = await axios.post(`${baseURL}api/auth/login`, loginData);
 
       if (response.data.success) {
 
@@ -125,7 +126,7 @@ const Login = ({ onLogin, currUserRole, setCurrUserRole }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/register', registerData);
+      const response = await axios.post(`${baseURL}api/auth/register`, registerData);
 
       if (response.data.success) {
         // After successful registration, switch to login panel

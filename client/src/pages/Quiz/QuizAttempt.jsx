@@ -159,10 +159,11 @@ const QuizAttempt = () => {
         answers: answers
       };
 
+      const baseURL = import.meta.env.VITE_BASE_URL;
       if (reportId) {
-        await axios.put(`http://localhost:5000/api/quizzes/reports/${reportId}`, reportData);
+        await axios.put(`${baseURL}api/quizzes/reports/${reportId}`, reportData);
       } else {
-        const response = await axios.post('http://localhost:5000/api/quizzes/reports', reportData);
+        const response = await axios.post(`${baseURL}api/quizzes/reports`, reportData);
         setReportId(response.data.data.id);
       }
 

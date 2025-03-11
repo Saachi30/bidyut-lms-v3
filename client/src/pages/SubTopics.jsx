@@ -65,16 +65,17 @@ const Subtopics = ({ currUserRole }) => {
   // Maximum file size: 100MB in bytes
   const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         // Fetch course details
-        const courseRes = await axios.get(`http://localhost:5000/api/courses/${courseId}`);
+        const courseRes = await axios.get(`${baseURL}api/courses/${courseId}`);
         setCourse(courseRes.data.data);
   
         // Fetch subtopics for this course
-        const subtopicsRes = await axios.get(`http://localhost:5000/api/subtopics/course/${courseId}`);
+        const subtopicsRes = await axios.get(`${baseURL}api/subtopics/course/${courseId}`);
         setSubtopics(subtopicsRes.data.data);
   
         setLoading(false);
@@ -151,7 +152,7 @@ const Subtopics = ({ currUserRole }) => {
       const formData = new FormData();
       formData.append('file', selectedFiles[type]);
       
-      const response = await axios.post('http://localhost:5000/api/cloudinary/upload', formData, {
+      const response = await axios.post(`${baseURL}api/cloudinary/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         },
@@ -281,7 +282,7 @@ const Subtopics = ({ currUserRole }) => {
     try {
       if (formMode === 'create') {
         // Create new subtopic
-        const res = await axios.post('http://localhost:5000/api/subtopics', {
+        const res = await axios.post(`${baseURL}api/subtopics`, {
           ...formData,
           title: formData.title || "Default Title", 
           courseId
@@ -291,7 +292,7 @@ const Subtopics = ({ currUserRole }) => {
         setSubtopics([...subtopics, res.data.data]);
       } else {
         // Update existing subtopic
-        const res = await axios.put(`http://localhost:5000/api/subtopics/${editingSubtopicId}`, formData);
+        const res = await axios.put(`${baseURL}api/subtopics/${editingSubtopicId}`, formData);
 
         // Update subtopic in state
         setSubtopics(subtopics.map(st =>
@@ -322,7 +323,7 @@ const Subtopics = ({ currUserRole }) => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this subtopic?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/subtopics/${id}`);
+        await axios.delete(`${baseURL}api/subtopics/${id}`);
 
         // Remove from state
         setSubtopics(subtopics.filter(st => st.id !== id));

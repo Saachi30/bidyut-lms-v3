@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Pencil, Trash2, X, AlertTriangle, ChevronRight, Loader } from 'lucide-react';
 
+const baseURL = import.meta.env.VITE_BASE_URL;
 const EnrollmentManagement = () => {
   // State management
   const [enrollments, setEnrollments] = useState([]);
@@ -24,7 +25,7 @@ const EnrollmentManagement = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get('http://localhost:5000/api/enrollments');
+      const response = await axios.get(`${baseURL}api/enrollments`);
       setEnrollments(response.data.data);
     } catch (err) {
       setError('Failed to fetch enrollments');
@@ -40,7 +41,7 @@ const EnrollmentManagement = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`http://localhost:5000/api/enrollments/${id}`);
+      const response = await axios.get(`${baseURL}api/enrollments/${id}`);
       setEnrollmentDetails(response.data.data);
     } catch (err) {
       setError('Failed to fetch enrollment details');
@@ -56,7 +57,7 @@ const EnrollmentManagement = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`http://localhost:5000/api/enrollments/student/${studentId}`);
+      const response = await axios.get(`${baseURL}api/enrollments/student/${studentId}`);
       setStudentEnrollments(response.data.data);
     } catch (err) {
       setError('Failed to fetch student enrollments');
@@ -72,7 +73,7 @@ const EnrollmentManagement = () => {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.get(`http://localhost:5000/api/enrollments/grade/${grade}`);
+      const response = await axios.get(`${baseURL}api/enrollments/grade/${grade}`);
       setGradeEnrollments(response.data.data);
     } catch (err) {
       setError('Failed to fetch grade enrollments');
@@ -93,7 +94,7 @@ const EnrollmentManagement = () => {
     setError('');
     try {
       const response = await axios.post(
-        'http://localhost:5000/api/enrollments', 
+        `${baseURL}api/enrollments`, 
         newEnrollment
       );
       

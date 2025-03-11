@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Search, Filter, X, Mic, MicOff, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const baseURL = import.meta.env.VITE_BASE_URL;
 const GlobalLMSSearch = () => {
   // State Management
   const [searchQuery, setSearchQuery] = useState('');
@@ -129,7 +130,7 @@ const GlobalLMSSearch = () => {
     setError(null);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/search/advanced', {
+      const response = await axios.post(`${baseURL}api/search/advanced`, {
         query: searchQuery,
         types: searchTypes.length ? searchTypes : undefined,
         minRelevance: 5,

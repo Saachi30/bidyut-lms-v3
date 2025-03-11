@@ -11,11 +11,12 @@ const Students = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const studentsPerPage = 10;
 
+  const baseURL = import.meta.env.VITE_BASE_URL;
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:5000/api/users/students/all');
+        const response = await axios.get(`${baseURL}api/users/students/all`);
         if (response.data.success) {
           setStudents(response.data.data);
         } else {
