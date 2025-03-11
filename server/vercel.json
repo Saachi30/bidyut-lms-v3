@@ -1,0 +1,20 @@
+{
+    "version": 2,
+    "builds": [
+      {
+        "src": "server.js",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/(.*)",
+        "dest": "server.js"
+      }
+    ],
+    "env": {
+      "DATABASE_URL": "prisma+postgres://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiNTBlMzc2ZjEtNTI2OC00ZGI4LWFlYTAtMGZjNDI5MzQ1MGIzIiwidGVuYW50X2lkIjoiNjg5YWJlZTZmNmEwZjcxYTRiMzZlMWI0OWMwZjY4N2M1NTJjNTQ0ZGVhZWI1MWM5MWNkOTAzOTk2MzI4ZTJjNCIsImludGVybmFsX3NlY3JldCI6ImZiODE0YzczLTVkYjktNGY1ZC1iNjExLWJkYzcyNjAwOGFhNyJ9.qnJ97DwPhoP6U9CGf7PuGOjuKnVk_A_DjygWk1o1HLs",
+      "NODE_ENV": "production",
+      "PORT": "5000"
+    }
+  }
