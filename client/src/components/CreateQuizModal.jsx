@@ -64,7 +64,7 @@ const CreateQuizModal = ({ onClose }) => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post('/api/quizzes', {
-        title: quizTitle,
+        title: quizTitle, 
         description: quizDescription,
         questions: questions, // Direct array to match backend expectation
         subtopicId: subtopicId ? parseInt(subtopicId) : null, // Parse to int or send null

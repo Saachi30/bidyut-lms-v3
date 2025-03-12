@@ -874,7 +874,7 @@ const App = () => {
               path="/lms/students"
               element={
                 <ProtectedRoute allowedRoles={["faculty", "institute", "admin"]}>
-                  <Students userRole={currUserRole} viewType="students" />
+                  <Students currUserRole={currUserRole} viewType="students" />
                 </ProtectedRoute>
               }
             />
@@ -890,7 +890,7 @@ const App = () => {
               path="/lms/faculties"
               element={
                 <ProtectedRoute allowedRoles={["institute", "admin"]}>
-                  <Faculties userRole={currUserRole} viewType="faculties" />
+                  <Faculties currUserRole={currUserRole} viewType="faculties" />
                 </ProtectedRoute>
               }
             />

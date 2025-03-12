@@ -25,12 +25,14 @@ model User {
   // Relationships
   institute     Institute? @relation(fields: [instituteId], references: [id], onDelete: SetNull)
   createdCourses        Course[]              @relation("CourseCreator")
-  gradeEnrollments      StudentGradeEnrollment[] @relation("EnrolledStudent") // Modified from course to grade
-  assignedEnrollments   StudentGradeEnrollment[] @relation("AssignedBy") // Modified from course to grade
+  gradeEnrollments      StudentGradeEnrollment[] @relation("EnrolledStudent") 
+  assignedEnrollments   StudentGradeEnrollment[] @relation("AssignedBy")
   facultyStudents       FacultyStudentManagement[] @relation("Faculty")
   assignedStudents      FacultyStudentManagement[] @relation("Student")
+  facultyGradeEnrollments FacultyGradeEnrollment[] @relation("EnrolledFaculty") // Added for faculty grade enrollments
+  assignedFacultyEnrollments FacultyGradeEnrollment[] @relation("FacultyAssignedBy") // Added for assigning faculty
   quizReports           QuizReport[]
-  quizCodes             QuizCode[]            @relation("QuizCodeCreator") // Added for quiz code creation
+  quizCodes             QuizCode[]            @relation("QuizCodeCreator")
   quizParticipants      QuizParticipant[]     
   contestParticipants   ContestParticipant[]
   aiQuizReports         AIQuizReport[]
@@ -91,7 +93,7 @@ model Course {
 model StudentGradeEnrollment {
   id          Int       @id @default(autoincrement())
   studentId   Int       @map("student_id")
-  grade       String    @map("grade") // Replaced gradeId with a simple grade string
+  grade       String    @map("grade")
   assignedById Int      @map("assigned_by")
   assignedAt  DateTime  @default(now()) @map("assigned_at")
   
@@ -99,8 +101,24 @@ model StudentGradeEnrollment {
   student     User      @relation("EnrolledStudent", fields: [studentId], references: [id], onDelete: Cascade)
   assignedBy  User      @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, grade]) // Changed from courseId to grade
-  @@map("student_grade_enrollments") // Changed table name
+  @@unique([studentId, grade])
+  @@map("student_grade_enrollments")
+}
+
+// New model for faculty grade enrollments
+model FacultyGradeEnrollment {
+  id          Int       @id @default(autoincrement())
+  facultyId   Int       @map("faculty_id")
+  grade       String    @map("grade")
+  assignedById Int      @map("assigned_by")
+  assignedAt  DateTime  @default(now()) @map("assigned_at")
+  
+  // Relationships
+  faculty     User      @relation("EnrolledFaculty", fields: [facultyId], references: [id], onDelete: Cascade)
+  assignedBy  User      @relation("FacultyAssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
+
+  @@unique([facultyId, grade])
+  @@map("faculty_grade_enrollments")
 }
 
 model Subtopic {
@@ -131,7 +149,7 @@ model Quiz {
   // Relationships
   subtopic    Subtopic?
   quizReports QuizReport[]
-  quizCodes   QuizCode[] // Added for quiz code functionality
+  quizCodes   QuizCode[]
   contest     Contest?
   participants QuizParticipant[]
 

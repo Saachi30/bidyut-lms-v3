@@ -18,6 +18,7 @@ const subtopicRoutes = require('./routes/subtopicRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const facultyStudentRoutes = require('./routes/facultyStudentRoutes');
 const searchRoutes = require('./routes/searchRoutes');
+const facultyGradeRoutes=require('./routes/facultyGradeRoutes');
 
 // Import new routes
 const quizRoutes = require('./routes/quizRoutes');
@@ -50,6 +51,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/users/faculties', facultyGradeRoutes);
 app.use('/api/institutes', instituteRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/courses', courseRoutes);

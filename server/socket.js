@@ -8,7 +8,7 @@ const initializeSocket = (server) => {
   io = socketio(server, {
     cors: {
       origin: 'http://localhost:5173',
-      methods: ['GET', 'POST'],
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
     },
     pingTimeout: 60000, // Increase ping timeout
     pingInterval: 25000, // Increase ping interval
