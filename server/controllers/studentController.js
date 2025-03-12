@@ -90,34 +90,75 @@ const getStudentById = async (req, res, next) => {
  * @access  Private/Admin, Institute
  */
 const createStudent = async (req, res, next) => {
-  try {
-    const { name, email, password, instituteId, grade, courseIds } = req.body;
-
-    const student = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password,
-        role: 'student',
-        instituteId: parseInt(instituteId),
-        grade,
-        enrolledCourses: {
-          create: courseIds?.map((courseId) => ({
-            courseId: parseInt(courseId),
-          })),
+    try {
+      const { name, email, password, phoneNumber, instituteId, grade, courseIds } = req.body;
+      
+      // Validate required fields
+      if (!name || !email || !password || !instituteId) {
+        return res.status(400).json({
+          success: false,
+          message: 'Name, email, password, and instituteId are required fields'
+        });
+      }
+  
+      // Check if email already exists
+      const existingUser = await prisma.user.findUnique({
+        where: { email }
+      });
+  
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: 'User with this email already exists'
+        });
+      }
+  
+      // Hash the password before saving it to the database
+      const bcrypt = require('bcryptjs');
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(password, salt);
+  
+      // Create the student with all provided data
+      const student = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          role: 'student',
+          phoneNumber,
+          instituteId: parseInt(instituteId),
+          grade,
+          // Handle course enrollments if courseIds are provided
+          enrolledCourses: courseIds?.length > 0
+            ? {
+                create: courseIds.map((courseId) => ({
+                  courseId: parseInt(courseId),
+                })),
+              }
+            : undefined,
         },
-      },
-    });
-
-    res.status(201).json({
-      success: true,
-      data: student,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
+        include: {
+          institute: true,
+          enrolledCourses: {
+            include: {
+              course: true,
+            },
+          },
+        },
+      });
+  
+      // Remove password from the response
+      const { password: _, ...studentWithoutPassword } = student;
+  
+      res.status(201).json({
+        success: true,
+        data: studentWithoutPassword,
+      });
+    } catch (error) {
+      console.error('Error creating student:', error);
+      next(error);
+    }
+  };
 /**
  * @desc    Update a student
  * @route   PUT /api/students/:id

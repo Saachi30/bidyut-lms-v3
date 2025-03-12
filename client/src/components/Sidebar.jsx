@@ -29,7 +29,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
           ...commonItems,
           { icon: BookOpen, label: 'Categories', path: '/lms/categories' },
           { icon: Book, label: 'Courses', path: '/lms/courses' },
-          { icon: User, label: 'Enrollments', path: '/lms/enrollments' },
+          // { icon: User, label: 'Enrollments', path: '/lms/enrollments' },
           { icon: School, label: 'Institutes', path: '/lms/institutes' },
           { icon: Users, label: 'Faculties', path: '/lms/faculties' },
           { icon: User, label: 'Students', path: '/lms/students' },
@@ -40,7 +40,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
           ...commonItems,
           { icon: BookOpen, label: 'Categories', path: '/lms/categories' },
           { icon: Book, label: 'Courses', path: '/lms/courses' },
-          { icon: User, label: 'Enrollments', path: '/lms/enrollments' },
+          // { icon: User, label: 'Enrollments', path: '/lms/enrollments' },
           { icon: Users, label: 'Faculties', path: '/lms/faculties' },
           { icon: User, label: 'Students', path: '/lms/students' }
         ];
@@ -48,7 +48,7 @@ const Sidebar = ({ isOpen, toggleSidebar, onLogout }) => {
         return [
           ...commonItems,
           { icon: BookOpen, label: 'Categories', path: '/lms/categories' },
-          { icon: User, label: 'Enrollments', path: '/lms/enrollments' },
+          // { icon: User, label: 'Enrollments', path: '/lms/enrollments' },
           { icon: Book, label: 'Courses', path: '/lms/courses' },
           { icon: User, label: 'Students', path: '/lms/students' }
         ];

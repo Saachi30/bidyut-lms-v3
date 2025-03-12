@@ -13,9 +13,11 @@ const Faculties = ({ currUserRole }) => {
   const [newFaculty, setNewFaculty] = useState({
     name: '',
     email: '',
+    password: '',
     phoneNumber: '',
-    institute: '',
+    instituteId: '',
     grade: '',
+    courseIds: []
   });
 
   const baseURL = import.meta.env.VITE_BASE_URL;
@@ -49,7 +51,9 @@ const Faculties = ({ currUserRole }) => {
       (faculty.phoneNumber && faculty.phoneNumber.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const matchesInstitute =
-      selectedInstitute === 'All Institutes' || faculty.institute === selectedInstitute;
+      selectedInstitute === 'All Institutes' || 
+      (faculty.institute && faculty.institute.name === selectedInstitute) ||
+      (faculty.instituteId && faculty.instituteId.toString() === selectedInstitute);
 
     return matchesSearch && matchesInstitute;
   });
@@ -63,15 +67,36 @@ const Faculties = ({ currUserRole }) => {
         setNewFaculty({
           name: '',
           email: '',
+          password: '',
           phoneNumber: '',
-          institute: '',
+          instituteId: '',
           grade: '',
+          courseIds: []
         });
       }
     } catch (err) {
       console.error('Error adding faculty:', err);
       setError('Failed to add faculty. Please try again later.');
     }
+  };
+
+  const handleDeleteFaculty = async (id) => {
+    if (window.confirm('Are you sure you want to delete this faculty?')) {
+      try {
+        const response = await axios.delete(`${baseURL}api/faculties/${id}`);
+        if (response.data.success) {
+          setFaculties(faculties.filter(faculty => faculty.id !== id));
+        }
+      } catch (err) {
+        console.error('Error deleting faculty:', err);
+        setError('Failed to delete faculty. Please try again later.');
+      }
+    }
+  };
+
+  const handleEditFaculty = (faculty) => {
+    setEditingFaculty(faculty);
+    // You would implement the edit modal and functionality here
   };
 
   return (
@@ -89,9 +114,31 @@ const Faculties = ({ currUserRole }) => {
         ) : null}
       </div>
 
+      {/* Search and Filter Section */}
+      <div className="flex items-center space-x-4 mb-6">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-3 text-gray-400" size={20} />
+          <input
+            type="text"
+            placeholder="Search faculties by name, email or phone..."
+            className="w-full pl-12 pr-4 py-3 border rounded-xl"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <select
+          className="px-4 py-3 border rounded-xl bg-white"
+          value={selectedInstitute}
+          onChange={(e) => setSelectedInstitute(e.target.value)}
+        >
+          <option value="All Institutes">All Institutes</option>
+          {/* You would dynamically populate institute options here */}
+        </select>
+      </div>
+
       {/* Add Faculty Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
           <div className="bg-white rounded-lg p-6 w-1/3">
             <h2 className="text-xl font-bold mb-4">Add New Faculty</h2>
             <div className="space-y-4">
@@ -101,6 +148,7 @@ const Faculties = ({ currUserRole }) => {
                 value={newFaculty.name}
                 onChange={(e) => setNewFaculty({ ...newFaculty, name: e.target.value })}
                 className="w-full p-2 border rounded"
+                required
               />
               <input
                 type="email"
@@ -108,6 +156,15 @@ const Faculties = ({ currUserRole }) => {
                 value={newFaculty.email}
                 onChange={(e) => setNewFaculty({ ...newFaculty, email: e.target.value })}
                 className="w-full p-2 border rounded"
+                required
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={newFaculty.password}
+                onChange={(e) => setNewFaculty({ ...newFaculty, password: e.target.value })}
+                className="w-full p-2 border rounded"
+                required
               />
               <input
                 type="text"
@@ -116,13 +173,15 @@ const Faculties = ({ currUserRole }) => {
                 onChange={(e) => setNewFaculty({ ...newFaculty, phoneNumber: e.target.value })}
                 className="w-full p-2 border rounded"
               />
-              <input
-                type="text"
-                placeholder="Institute"
-                value={newFaculty.institute}
-                onChange={(e) => setNewFaculty({ ...newFaculty, institute: e.target.value })}
+              <select
+                value={newFaculty.instituteId}
+                onChange={(e) => setNewFaculty({ ...newFaculty, instituteId: e.target.value })}
                 className="w-full p-2 border rounded"
-              />
+                required
+              >
+                <option value="">Select Institute</option>
+                {/* You would dynamically populate institute options here */}
+              </select>
               <input
                 type="text"
                 placeholder="Grade"
@@ -130,6 +189,14 @@ const Faculties = ({ currUserRole }) => {
                 onChange={(e) => setNewFaculty({ ...newFaculty, grade: e.target.value })}
                 className="w-full p-2 border rounded"
               />
+              {/* Course selection would be implemented here */}
+              <div className="border rounded p-2">
+                <label className="block mb-2 font-medium">Assigned Courses</label>
+                {/* This would be a multi-select component or checkboxes for courses */}
+                <p className="text-sm text-gray-500">
+                  No courses available. They will be assignable after faculty creation.
+                </p>
+              </div>
             </div>
             <div className="flex justify-end mt-6">
               <button
@@ -160,14 +227,26 @@ const Faculties = ({ currUserRole }) => {
           <div className="col-span-1">Grade</div>
           <div className="col-span-2">Actions</div>
         </div>
-        {filteredFaculties.length > 0 ? (
+        
+        {loading ? (
+          <div className="p-8 text-center">
+            <Loader className="animate-spin h-8 w-8 mx-auto text-primary-500" />
+            <p className="mt-2 text-gray-600">Loading faculties...</p>
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center text-red-500">
+            {error}
+          </div>
+        ) : filteredFaculties.length > 0 ? (
           filteredFaculties.map((faculty) => (
             <div key={faculty.id} className="grid grid-cols-12 p-6 border-b hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 transition-all duration-300 items-center">
               <div className="col-span-1 font-semibold text-primary-600">#{faculty.id}</div>
               <div className="col-span-2 font-medium">{faculty.name || 'N/A'}</div>
               <div className="col-span-2 text-gray-600">{faculty.email || 'N/A'}</div>
               <div className="col-span-2 text-gray-600">{faculty.phoneNumber || 'N/A'}</div>
-              <div className="col-span-2 text-gray-600">{faculty.institute || 'Unassigned'}</div>
+              <div className="col-span-2 text-gray-600">
+                {faculty.institute ? faculty.institute.name : (faculty.instituteId ? faculty.instituteId : 'Unassigned')}
+              </div>
               <div className="col-span-1 text-gray-600">{faculty.grade || 'N/A'}</div>
               <div className="col-span-2">
                 {currUserRole === 'admin' || currUserRole === 'institute' ? (
@@ -176,12 +255,14 @@ const Faculties = ({ currUserRole }) => {
                       onClick={() => handleEditFaculty(faculty)}
                       className="text-blue-600 hover:text-blue-900 mr-3"
                     >
+                      <Edit size={18} className="inline mr-1" />
                       Edit
                     </button>
                     <button
                       onClick={() => handleDeleteFaculty(faculty.id)}
                       className="text-red-600 hover:text-red-900"
                     >
+                      <Trash2 size={18} className="inline mr-1" />
                       Delete
                     </button>
                   </>
