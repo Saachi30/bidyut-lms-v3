@@ -17,7 +17,7 @@ model User {
   phoneNumber   String?
   city          String?
   state         String?
-  grade         String?   // Added grade field for students
+  grade         String?   // Grade field for students/faculty
   streakNumber  Int       @default(0)
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at")
@@ -25,12 +25,9 @@ model User {
   // Relationships
   institute     Institute? @relation(fields: [instituteId], references: [id], onDelete: SetNull)
   createdCourses        Course[]              @relation("CourseCreator")
-  gradeEnrollments      StudentGradeEnrollment[] @relation("EnrolledStudent") 
-  assignedEnrollments   StudentGradeEnrollment[] @relation("AssignedBy")
+  enrolledCourses       CourseEnrollment[]    // Courses user is enrolled in
   facultyStudents       FacultyStudentManagement[] @relation("Faculty")
   assignedStudents      FacultyStudentManagement[] @relation("Student")
-  facultyGradeEnrollments FacultyGradeEnrollment[] @relation("EnrolledFaculty") // Added for faculty grade enrollments
-  assignedFacultyEnrollments FacultyGradeEnrollment[] @relation("FacultyAssignedBy") // Added for assigning faculty
   quizReports           QuizReport[]
   quizCodes             QuizCode[]            @relation("QuizCodeCreator")
   quizParticipants      QuizParticipant[]     
@@ -76,7 +73,7 @@ model Course {
   description String?
   categoryId  Int       @map("category_id")
   instituteId Int       @map("institute_id")
-  grade       String    @map("grade") // Replaced gradeId with a simple grade string
+  grade       String    @map("grade")
   createdById Int       @map("created_by")
   createdAt   DateTime  @default(now()) @map("created_at")
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
@@ -85,40 +82,25 @@ model Course {
   category    Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   institute   Institute @relation(fields: [instituteId], references: [id], onDelete: Cascade)
   createdBy   User      @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  enrolledUsers CourseEnrollment[] // Users enrolled in this course
   subtopics   Subtopic[]
 
   @@map("courses")
 }
 
-model StudentGradeEnrollment {
+// Junction table for many-to-many relationship between Users and Courses
+model CourseEnrollment {
   id          Int       @id @default(autoincrement())
-  studentId   Int       @map("student_id")
-  grade       String    @map("grade")
-  assignedById Int      @map("assigned_by")
-  assignedAt  DateTime  @default(now()) @map("assigned_at")
+  userId      Int       @map("user_id")
+  courseId    Int       @map("course_id")
+  enrolledAt  DateTime  @default(now()) @map("enrolled_at")
   
   // Relationships
-  student     User      @relation("EnrolledStudent", fields: [studentId], references: [id], onDelete: Cascade)
-  assignedBy  User      @relation("AssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
-  @@unique([studentId, grade])
-  @@map("student_grade_enrollments")
-}
-
-// New model for faculty grade enrollments
-model FacultyGradeEnrollment {
-  id          Int       @id @default(autoincrement())
-  facultyId   Int       @map("faculty_id")
-  grade       String    @map("grade")
-  assignedById Int      @map("assigned_by")
-  assignedAt  DateTime  @default(now()) @map("assigned_at")
-  
-  // Relationships
-  faculty     User      @relation("EnrolledFaculty", fields: [facultyId], references: [id], onDelete: Cascade)
-  assignedBy  User      @relation("FacultyAssignedBy", fields: [assignedById], references: [id], onDelete: Cascade)
-
-  @@unique([facultyId, grade])
-  @@map("faculty_grade_enrollments")
+  @@unique([userId, courseId])
+  @@map("course_enrollments")
 }
 
 model Subtopic {

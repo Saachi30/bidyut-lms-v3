@@ -6,7 +6,6 @@ const http = require('http');
 const { errorHandler } = require('./middleware/errorMiddleware');
 const { routeNotFound } = require('./middleware/routeNotFoundMiddleware');
 
-// For logging HTTP requests (helpful for debugging)
 // Import routes
 const cloudinaryRoutes = require('./routes/cloudinaryRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -18,7 +17,7 @@ const subtopicRoutes = require('./routes/subtopicRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const facultyStudentRoutes = require('./routes/facultyStudentRoutes');
 const searchRoutes = require('./routes/searchRoutes');
-const facultyGradeRoutes=require('./routes/facultyGradeRoutes');
+const facultyGradeRoutes = require('./routes/facultyGradeRoutes');
 
 // Import new routes
 const quizRoutes = require('./routes/quizRoutes');
@@ -26,6 +25,10 @@ const quizInvitationRoutes = require('./routes/quizInvitationRoutes');
 const contestRoutes = require('./routes/contestRoutes');
 const aiQuizRoutes = require('./routes/aiQuizRoutes');
 const quizCompetitionRoutes = require('./routes/quizCompetitionRoutes');
+
+// Import student and faculty routes
+const studentRoutes = require('./routes/studentRoutes');
+const facultyRoutes = require('./routes/facultyRoutes');
 
 // Create Express app and HTTP server
 const app = express();
@@ -67,6 +70,10 @@ app.use('/api/contests', contestRoutes);
 app.use('/api/ai-quizzes', aiQuizRoutes);
 app.use('/api/cloudinary', cloudinaryRoutes);
 app.use('/api/search', searchRoutes);
+
+// Add student and faculty routes
+app.use('/api/students', studentRoutes);
+app.use('/api/faculties', facultyRoutes);
 
 // Welcome route
 app.get('/', (req, res) => {
