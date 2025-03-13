@@ -2,7 +2,7 @@ const { app, server } = require('./app');
 const { logger } = require('./utils/logger');
 require('dotenv').config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 // Use the server with Socket.IO attached, not just the Express app
 server.listen(PORT, () => {

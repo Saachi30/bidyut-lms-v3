@@ -27,7 +27,7 @@
 
 /* Custom styles */
 .btn-gradient {
-    @apply bg-secondary-500 hover:bg-secondary-600 transition-colors duration-300;
+    @apply bg-white hover:bg-gray-50 transition-colors duration-300;
   }
   
   .header-gradient {
