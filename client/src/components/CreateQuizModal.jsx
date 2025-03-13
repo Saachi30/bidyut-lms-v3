@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Trash2, PlusCircle } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const CreateQuizModal = ({ onClose }) => {
   const [quizTitle, setQuizTitle] = useState('');
@@ -13,6 +14,7 @@ const CreateQuizModal = ({ onClose }) => {
     correctAnswer: 0 
   }]);
 
+  const navigate=useNavigate();
   const handleAddQuestion = () => {
     setQuestions([...questions, { 
       question: '', 
@@ -78,8 +80,7 @@ const CreateQuizModal = ({ onClose }) => {
       toast.success('Quiz created successfully');
       onClose();
       
-      // Navigate to the newly created quiz
-      window.location.href = `/lms/quiz/${response.data.data.quiz.id}`;
+      navigate(`/lms/quiz/${response.data.data.quiz.id}`);
     } catch (err) {
       // Handle specific error messages from backend
       const errorMessage = err.response?.data?.message || 'Failed to create quiz';

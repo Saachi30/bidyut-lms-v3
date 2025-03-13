@@ -2,10 +2,12 @@ import React, { useState } from 'react';
 import { X, QrCode } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
 
 const JoinQuizModal = ({ onClose }) => {
   const [quizCode, setQuizCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleJoinQuiz = async () => {
     // Validate quiz code input
@@ -23,7 +25,7 @@ const JoinQuizModal = ({ onClose }) => {
       
       // Navigate to the quiz page after successful code verification
       onClose();
-      window.location.href = `/lms/quiz/${response.data.data.id}`;
+      navigate(`/lms/quiz/${response.data.data.id}`);
     } catch (err) {
       // Handle specific error scenarios
       if (err.response) {
