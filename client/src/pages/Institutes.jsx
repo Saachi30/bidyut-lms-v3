@@ -24,6 +24,7 @@ const Institutes = () => {
   const [submitError, setSubmitError] = useState(null);
 
   const baseURL = import.meta.env.VITE_BASE_URL;
+  
   // Fetch institutes
   const fetchInstitutes = async () => {
     try {
@@ -34,7 +35,7 @@ const Institutes = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setInstitutes(response.data); // Updated to match the response structure
+      setInstitutes(response.data);
     } catch (err) {
       setError(err.response?.data?.message || 'An error occurred while fetching institutes');
     } finally {
@@ -47,107 +48,106 @@ const Institutes = () => {
   }, []);
 
   // Handle input change
- // Handle input change
-const handleInputChange = (e) => {
-  const { name, value } = e.target;
-  setFormData((prevState) => ({
-    ...prevState,
-    [name]: value,
-  }));
-};
-
-// Handle form submissions
-const handleAddInstitute = async (e) => {
-  e.preventDefault();
-  if (!formData.name || !formData.location) {
-    setSubmitError('Please fill all required fields');
-    return;
-  }
-
-  // Convert maxGrades and maxStudents to integers
-  const data = {
-    ...formData,
-    maxGrades: parseInt(formData.maxGrades, 10),
-    maxStudents: parseInt(formData.maxStudents, 10),
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevState) => ({
+      ...prevState,
+      [name]: value,
+    }));
   };
 
-  // Validate if the conversion resulted in valid numbers
-  if (isNaN(data.maxGrades) || isNaN(data.maxStudents)) {
-    setSubmitError('Max Grades and Max Students must be valid numbers');
-    return;
-  }
-
-  try {
-    setSubmitting(true);
-    setSubmitError(null);
-
-    const token = localStorage.getItem('token');
-    const response = await axios.post(`${baseURL}api/institutes`, data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (response.data) {
-      await fetchInstitutes();
-      closeAllModals();
-    } else {
-      setSubmitError('Failed to add institute');
+  // Handle form submissions
+  const handleAddInstitute = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.location) {
+      setSubmitError('Please fill all required fields');
+      return;
     }
-  } catch (err) {
-    setSubmitError(err.response?.data?.message || 'An error occurred while adding institute');
-  } finally {
-    setSubmitting(false);
-  }
-};
 
-const handleUpdateInstitute = async (e) => {
-  e.preventDefault();
-  if (!formData.name || !formData.location) {
-    setSubmitError('Please fill all required fields');
-    return;
-  }
+    // Convert maxGrades and maxStudents to integers
+    const data = {
+      ...formData,
+      maxGrades: parseInt(formData.maxGrades, 10),
+      maxStudents: parseInt(formData.maxStudents, 10),
+    };
 
-  // Convert maxGrades and maxStudents to integers
-  const data = {
-    ...formData,
-    maxGrades: parseInt(formData.maxGrades, 10),
-    maxStudents: parseInt(formData.maxStudents, 10),
-  };
+    // Validate if the conversion resulted in valid numbers
+    if (isNaN(data.maxGrades) || isNaN(data.maxStudents)) {
+      setSubmitError('Max Grades and Max Students must be valid numbers');
+      return;
+    }
 
-  // Validate if the conversion resulted in valid numbers
-  if (isNaN(data.maxGrades) || isNaN(data.maxStudents)) {
-    setSubmitError('Max Grades and Max Students must be valid numbers');
-    return;
-  }
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
 
-  try {
-    setSubmitting(true);
-    setSubmitError(null);
-
-    const token = localStorage.getItem('token');
-    const response = await axios.put(
-      `${baseURL}api/institutes/${selectedInstitute.id}`,
-      data,
-      {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(`${baseURL}api/institutes`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      }
-    );
+      });
 
-    if (response.data) {
-      await fetchInstitutes();
-      closeAllModals();
-    } else {
-      setSubmitError('Failed to update institute');
+      if (response.data) {
+        await fetchInstitutes();
+        closeAllModals();
+      } else {
+        setSubmitError('Failed to add institute');
+      }
+    } catch (err) {
+      setSubmitError(err.response?.data?.message || 'An error occurred while adding institute');
+    } finally {
+      setSubmitting(false);
     }
-  } catch (err) {
-    setSubmitError(err.response?.data?.message || 'An error occurred while updating institute');
-  } finally {
-    setSubmitting(false);
-  }
-};
+  };
+
+  const handleUpdateInstitute = async (e) => {
+    e.preventDefault();
+    if (!formData.name || !formData.location) {
+      setSubmitError('Please fill all required fields');
+      return;
+    }
+
+    // Convert maxGrades and maxStudents to integers
+    const data = {
+      ...formData,
+      maxGrades: parseInt(formData.maxGrades, 10),
+      maxStudents: parseInt(formData.maxStudents, 10),
+    };
+
+    // Validate if the conversion resulted in valid numbers
+    if (isNaN(data.maxGrades) || isNaN(data.maxStudents)) {
+      setSubmitError('Max Grades and Max Students must be valid numbers');
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      setSubmitError(null);
+
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        `${baseURL}api/institutes/${selectedInstitute.id}`,
+        data,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (response.data) {
+        await fetchInstitutes();
+        closeAllModals();
+      } else {
+        setSubmitError('Failed to update institute');
+      }
+    } catch (err) {
+      setSubmitError(err.response?.data?.message || 'An error occurred while updating institute');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   // Open modals
   const openAddModal = () => {
@@ -182,9 +182,6 @@ const handleUpdateInstitute = async (e) => {
     setSubmitError(null);
   };
 
-  // Handle form submissions
-
-
   const handleDeleteInstitute = async () => {
     try {
       setSubmitting(true);
@@ -217,8 +214,8 @@ const handleUpdateInstitute = async (e) => {
     if (!show) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-xl shadow-lg max-w-md w-full animate-fadeIn">
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4 overflow-y-auto">
+        <div className="bg-white rounded-xl shadow-lg w-full max-w-md animate-fadeIn mx-auto">
           <div className="flex justify-between items-center border-b border-gray-100 p-4">
             <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
             <button
@@ -236,10 +233,10 @@ const handleUpdateInstitute = async (e) => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="flex justify-between items-center mb-6">
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen ml-4 md:ml-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-ternary-500">Institutes</h1>
+          <h1 className="text-2xl md:text-3xl font-bold text-ternary-500">Institutes</h1>
           {institutes.length > 0 && (
             <p className="text-gray-500 text-sm mt-1">
               Showing {institutes.length} educational institutions
@@ -248,7 +245,7 @@ const handleUpdateInstitute = async (e) => {
         </div>
         <button
           onClick={openAddModal}
-          className="flex items-center space-x-2 px-4 py-2 bg-ternary-500 text-white rounded-lg hover:bg-ternary-600 shadow-sm"
+          className="flex items-center space-x-2 px-4 py-2 bg-ternary-500 text-white rounded-lg hover:bg-ternary-600 shadow-sm w-full sm:w-auto justify-center sm:justify-start"
         >
           <Plus size={18} />
           <span>Add Institute</span>
@@ -277,22 +274,22 @@ const handleUpdateInstitute = async (e) => {
               key={institute.id}
               className="bg-white rounded-xl shadow hover:shadow-md transition-all p-4 group"
             >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-start md:items-center gap-4 flex-col sm:flex-row">
                   <div className="w-12 h-12 bg-gradient-to-br from-primary-100 to-secondary-100 rounded-lg flex items-center justify-center group-hover:scale-105 transition-all">
                     <School className="text-primary-600" size={24} />
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-gray-800">{institute.name}</h3>
-                    <div className="flex flex-col sm:flex-row sm:space-x-4 text-sm text-gray-600 mt-1">
-                      <span>📍 {institute.location}</span>
-                      <span>📚 Max Grades: {institute.maxGrades}</span>
-                      <span>🧑‍🎓 Max Students: {institute.maxStudents}</span>
-                      <span>🕒 Last Updated: {new Date(institute.updatedAt).toLocaleString()}</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-1 text-sm text-gray-600 mt-1">
+                      <span className="flex items-center">📍 {institute.location}</span>
+                      <span className="flex items-center">📚 Max Grades: {institute.maxGrades}</span>
+                      <span className="flex items-center">🧑‍🎓 Max Students: {institute.maxStudents}</span>
+                      <span className="flex items-center">🕒 Last Updated: {new Date(institute.updatedAt).toLocaleDateString()}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 sm:ml-auto">
                   <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">
                     Active
                   </span>
@@ -357,59 +354,60 @@ const handleUpdateInstitute = async (e) => {
               required
             />
           </div>
-          <div className="mb-4">
-  <label htmlFor="maxGrades" className="block text-sm font-medium text-gray-700 mb-1">
-    Max Grades
-  </label>
-  <input
-    type="number"
-    id="maxGrades"
-    name="maxGrades"
-    value={formData.maxGrades}
-    onChange={handleInputChange}
-    placeholder="Enter max grades"
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
-    min="0"
-    required
-  />
-</div>
-<div className="mb-6">
-  <label htmlFor="maxStudents" className="block text-sm font-medium text-gray-700 mb-1">
-    Max Students
-  </label>
-  <input
-    type="number"
-    id="maxStudents"
-    name="maxStudents"
-    value={formData.maxStudents}
-    onChange={handleInputChange}
-    placeholder="Enter max students"
-    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
-    min="0"
-    required
-  />
-</div>
-          <div className="flex justify-end space-x-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="mb-4">
+              <label htmlFor="maxGrades" className="block text-sm font-medium text-gray-700 mb-1">
+                Max Grades
+              </label>
+              <input
+                type="number"
+                id="maxGrades"
+                name="maxGrades"
+                value={formData.maxGrades}
+                onChange={handleInputChange}
+                placeholder="Enter max grades"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
+                min="0"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="maxStudents" className="block text-sm font-medium text-gray-700 mb-1">
+                Max Students
+              </label>
+              <input
+                type="number"
+                id="maxStudents"
+                name="maxStudents"
+                value={formData.maxStudents}
+                onChange={handleInputChange}
+                placeholder="Enter max students"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
+                min="0"
+                required
+              />
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-6">
             <button
               type="button"
               onClick={closeAllModals}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              disabled={submitting}
             >
               Cancel
             </button>
             <button
               type="submit"
+              className="px-4 py-2 bg-ternary-500 text-white rounded-md hover:bg-ternary-600 transition-colors flex items-center justify-center"
               disabled={submitting}
-              className="px-4 py-2 bg-ternary-500 text-white rounded-md hover:bg-ternary-600 focus:outline-none focus:ring-2 focus:ring-ternary-300 disabled:opacity-70 flex items-center"
             >
               {submitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Submitting...
-                </>
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
               ) : (
-                'Add Institute'
+                <Plus size={18} className="mr-2" />
               )}
+              {submitting ? 'Adding...' : 'Add Institute'}
             </button>
           </div>
         </form>
@@ -424,12 +422,12 @@ const handleUpdateInstitute = async (e) => {
             </div>
           )}
           <div className="mb-4">
-            <label htmlFor="update-name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
               Institute Name *
             </label>
             <input
               type="text"
-              id="update-name"
+              id="name"
               name="name"
               value={formData.name}
               onChange={handleInputChange}
@@ -440,12 +438,12 @@ const handleUpdateInstitute = async (e) => {
             />
           </div>
           <div className="mb-4">
-            <label htmlFor="update-location" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
               Location *
             </label>
             <input
               type="text"
-              id="update-location"
+              id="location"
               name="location"
               value={formData.location}
               onChange={handleInputChange}
@@ -455,104 +453,110 @@ const handleUpdateInstitute = async (e) => {
               required
             />
           </div>
-          <div className="mb-4">
-            <label htmlFor="update-maxGrades" className="block text-sm font-medium text-gray-700 mb-1">
-              Max Grades
-            </label>
-            <input
-              type="number"
-              id="update-maxGrades"
-              name="maxGrades"
-              value={formData.maxGrades}
-              onChange={handleInputChange}
-              placeholder="Enter max grades"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
-              min="0"
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="mb-4">
+              <label htmlFor="maxGrades" className="block text-sm font-medium text-gray-700 mb-1">
+                Max Grades
+              </label>
+              <input
+                type="number"
+                id="maxGrades"
+                name="maxGrades"
+                value={formData.maxGrades}
+                onChange={handleInputChange}
+                placeholder="Enter max grades"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
+                min="0"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label htmlFor="maxStudents" className="block text-sm font-medium text-gray-700 mb-1">
+                Max Students
+              </label>
+              <input
+                type="number"
+                id="maxStudents"
+                name="maxStudents"
+                value={formData.maxStudents}
+                onChange={handleInputChange}
+                placeholder="Enter max students"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
+                min="0"
+                required
+              />
+            </div>
           </div>
-          <div className="mb-6">
-            <label htmlFor="update-maxStudents" className="block text-sm font-medium text-gray-700 mb-1">
-              Max Students
-            </label>
-            <input
-              type="number"
-              id="update-maxStudents"
-              name="maxStudents"
-              value={formData.maxStudents}
-              onChange={handleInputChange}
-              placeholder="Enter max students"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-ternary-300"
-              min="0"
-              required
-            />
-          </div>
-          <div className="flex justify-end space-x-3">
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-6">
             <button
               type="button"
               onClick={closeAllModals}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              disabled={submitting}
             >
               Cancel
             </button>
             <button
               type="submit"
+              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors flex items-center justify-center"
               disabled={submitting}
-              className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 disabled:opacity-70 flex items-center"
             >
               {submitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Updating...
-                </>
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
               ) : (
-                'Update Institute'
+                <Edit size={18} className="mr-2" />
               )}
+              {submitting ? 'Updating...' : 'Update Institute'}
             </button>
           </div>
         </form>
       </Modal>
 
-      {/* Delete Confirmation Modal */}
-      <Modal show={showDeleteModal} title="Confirm Deletion" onClose={closeAllModals}>
-        <div className="p-2">
+      {/* Delete Institute Modal */}
+      <Modal show={showDeleteModal} title="Delete Institute" onClose={closeAllModals}>
+        <div className="p-1">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="bg-red-100 p-2 rounded-full">
+              <AlertTriangle size={20} className="text-red-500" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-gray-800">Confirm Deletion</h3>
+              <p className="text-sm text-gray-600">This action cannot be undone.</p>
+            </div>
+          </div>
+          
           {submitError && (
             <div className="mb-4 bg-red-50 text-red-600 p-3 rounded-md text-sm">
               {submitError}
             </div>
           )}
-          <div className="flex items-center mb-4 bg-amber-50 p-3 rounded-md">
-            <AlertTriangle className="text-amber-500 mr-3" size={24} />
-            <div>
-              <p className="font-medium text-gray-800">Are you sure you want to delete this institute?</p>
-              <p className="text-sm text-gray-600 mt-1">
-                You're about to delete <span className="font-semibold">{selectedInstitute?.name}</span>
-                This action cannot be undone.
-              </p>
-            </div>
-          </div>
-          <div className="flex justify-end space-x-3">
+          
+          <p className="text-gray-700 mb-4">
+            Are you sure you want to delete the institute{' '}
+            <span className="font-semibold">{selectedInstitute?.name}</span>?
+          </p>
+          
+          <div className="flex flex-col sm:flex-row sm:justify-end gap-2 sm:gap-3 mt-6">
             <button
               type="button"
               onClick={closeAllModals}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
+              disabled={submitting}
             >
               Cancel
             </button>
             <button
               type="button"
               onClick={handleDeleteInstitute}
+              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center justify-center"
               disabled={submitting}
-              className="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-300 disabled:opacity-70 flex items-center"
             >
               {submitting ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Deleting...
-                </>
+                <span className="inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
               ) : (
-                'Delete Institute'
+                <Trash2 size={18} className="mr-2" />
               )}
+              {submitting ? 'Deleting...' : 'Delete Institute'}
             </button>
           </div>
         </div>

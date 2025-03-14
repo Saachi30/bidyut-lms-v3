@@ -100,12 +100,12 @@ const Faculties = ({ currUserRole }) => {
   };
 
   return (
-    <div className="p-8 bg-white min-h-screen">
-      <div className="flex space-x-8 items-center mb-8">
-        <h1 className="text-4xl font-bold text-ternary-500">Faculties Management</h1>
+    <div className="p-4 md:p-6 lg:p-8 bg-white min-h-screen ml-0 md:ml-4 lg:ml-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 space-y-4 md:space-y-0">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ternary-500">Faculties Management</h1>
         {currUserRole === 'admin' || currUserRole === 'institute' ? (
           <button
-            className="flex items-center space-x-2 px-6 py-3 bg-ternary-500 text-white rounded-xl transition-all duration-300 hover:bg-ternary-600"
+            className="flex items-center justify-center space-x-2 px-4 py-2 md:px-6 md:py-3 bg-ternary-500 text-white rounded-xl transition-all duration-300 hover:bg-ternary-600 w-full md:w-auto"
             onClick={() => setIsAddModalOpen(true)}
           >
             <Plus size={20} />
@@ -115,7 +115,7 @@ const Faculties = ({ currUserRole }) => {
       </div>
 
       {/* Search and Filter Section */}
-      <div className="flex items-center space-x-4 mb-6">
+      <div className="flex flex-col md:flex-row md:items-center space-y-4 md:space-y-0 md:space-x-4 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 text-gray-400" size={20} />
           <input
@@ -127,7 +127,7 @@ const Faculties = ({ currUserRole }) => {
           />
         </div>
         <select
-          className="px-4 py-3 border rounded-xl bg-white"
+          className="px-4 py-3 border rounded-xl bg-white w-full md:w-auto"
           value={selectedInstitute}
           onChange={(e) => setSelectedInstitute(e.target.value)}
         >
@@ -138,8 +138,8 @@ const Faculties = ({ currUserRole }) => {
 
       {/* Add Faculty Modal */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-          <div className="bg-white rounded-lg p-6 w-1/3">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-4">
+          <div className="bg-white rounded-lg p-4 md:p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
             <h2 className="text-xl font-bold mb-4">Add New Faculty</h2>
             <div className="space-y-4">
               <input
@@ -198,16 +198,16 @@ const Faculties = ({ currUserRole }) => {
                 </p>
               </div>
             </div>
-            <div className="flex justify-end mt-6">
+            <div className="flex flex-col sm:flex-row sm:justify-end mt-6 space-y-2 sm:space-y-0 sm:space-x-4">
               <button
                 onClick={() => setIsAddModalOpen(false)}
-                className="mr-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 w-full sm:w-auto"
               >
                 Cancel
               </button>
               <button
                 onClick={handleAddFaculty}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 w-full sm:w-auto"
               >
                 Add Faculty
               </button>
@@ -217,64 +217,68 @@ const Faculties = ({ currUserRole }) => {
       )}
 
       {/* Table Section */}
-      <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-        <div className="grid grid-cols-12 bg-gradient-to-r from-primary-100 to-secondary-100 p-6 font-semibold text-gray-700">
-          <div className="col-span-1">ID</div>
-          <div className="col-span-2">Name</div>
-          <div className="col-span-2">Email</div>
-          <div className="col-span-2">Phone</div>
-          <div className="col-span-2">Institute</div>
-          <div className="col-span-1">Grade</div>
-          <div className="col-span-2">Actions</div>
-        </div>
-        
-        {loading ? (
-          <div className="p-8 text-center">
-            <Loader className="animate-spin h-8 w-8 mx-auto text-primary-500" />
-            <p className="mt-2 text-gray-600">Loading faculties...</p>
+      <div className="bg-white rounded-2xl shadow-lg overflow-x-auto">
+        <div className="min-w-full">
+          <div className="grid grid-cols-12 bg-gradient-to-r from-primary-100 to-secondary-100 p-4 md:p-6 font-semibold text-gray-700">
+            <div className="col-span-1">ID</div>
+            <div className="col-span-2">Name</div>
+            <div className="col-span-2">Email</div>
+            <div className="col-span-2">Phone</div>
+            <div className="col-span-2">Institute</div>
+            <div className="col-span-1">Grade</div>
+            <div className="col-span-2">Actions</div>
           </div>
-        ) : error ? (
-          <div className="p-8 text-center text-red-500">
-            {error}
-          </div>
-        ) : filteredFaculties.length > 0 ? (
-          filteredFaculties.map((faculty) => (
-            <div key={faculty.id} className="grid grid-cols-12 p-6 border-b hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 transition-all duration-300 items-center">
-              <div className="col-span-1 font-semibold text-primary-600">#{faculty.id}</div>
-              <div className="col-span-2 font-medium">{faculty.name || 'N/A'}</div>
-              <div className="col-span-2 text-gray-600">{faculty.email || 'N/A'}</div>
-              <div className="col-span-2 text-gray-600">{faculty.phoneNumber || 'N/A'}</div>
-              <div className="col-span-2 text-gray-600">
-                {faculty.institute ? faculty.institute.name : (faculty.instituteId ? faculty.instituteId : 'Unassigned')}
-              </div>
-              <div className="col-span-1 text-gray-600">{faculty.grade || 'N/A'}</div>
-              <div className="col-span-2">
-                {currUserRole === 'admin' || currUserRole === 'institute' ? (
-                  <>
-                    <button
-                      onClick={() => handleEditFaculty(faculty)}
-                      className="text-blue-600 hover:text-blue-900 mr-3"
-                    >
-                      <Edit size={18} className="inline mr-1" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => handleDeleteFaculty(faculty.id)}
-                      className="text-red-600 hover:text-red-900"
-                    >
-                      <Trash2 size={18} className="inline mr-1" />
-                      Delete
-                    </button>
-                  </>
-                ) : null}
-              </div>
+          
+          {loading ? (
+            <div className="p-8 text-center">
+              <Loader className="animate-spin h-8 w-8 mx-auto text-primary-500" />
+              <p className="mt-2 text-gray-600">Loading faculties...</p>
             </div>
-          ))
-        ) : (
-          <div className="p-8 text-center text-gray-500">
-            No faculties found matching your search criteria
-          </div>
-        )}
+          ) : error ? (
+            <div className="p-8 text-center text-red-500">
+              {error}
+            </div>
+          ) : filteredFaculties.length > 0 ? (
+            <div className="divide-y">
+              {filteredFaculties.map((faculty) => (
+                <div key={faculty.id} className="grid grid-cols-12 p-4 md:p-6 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 transition-all duration-300 items-center text-sm md:text-base">
+                  <div className="col-span-1 font-semibold text-primary-600">#{faculty.id}</div>
+                  <div className="col-span-2 font-medium truncate">{faculty.name || 'N/A'}</div>
+                  <div className="col-span-2 text-gray-600 truncate">{faculty.email || 'N/A'}</div>
+                  <div className="col-span-2 text-gray-600 truncate">{faculty.phoneNumber || 'N/A'}</div>
+                  <div className="col-span-2 text-gray-600 truncate">
+                    {faculty.institute ? faculty.institute.name : (faculty.instituteId ? faculty.instituteId : 'Unassigned')}
+                  </div>
+                  <div className="col-span-1 text-gray-600">{faculty.grade || 'N/A'}</div>
+                  <div className="col-span-2 flex flex-col md:flex-row space-y-2 md:space-y-0 md:space-x-2">
+                    {currUserRole === 'admin' || currUserRole === 'institute' ? (
+                      <>
+                        <button
+                          onClick={() => handleEditFaculty(faculty)}
+                          className="text-blue-600 hover:text-blue-900 inline-flex items-center"
+                        >
+                          <Edit size={16} className="mr-1" />
+                          <span className="hidden md:inline">Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteFaculty(faculty.id)}
+                          className="text-red-600 hover:text-red-900 inline-flex items-center"
+                        >
+                          <Trash2 size={16} className="mr-1" />
+                          <span className="hidden md:inline">Delete</span>
+                        </button>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="p-8 text-center text-gray-500">
+              No faculties found matching your search criteria
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
